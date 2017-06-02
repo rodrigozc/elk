@@ -1,0 +1,55 @@
+# Run with:
+# docker-compose up
+# Filebeat conf
+# user: filebeat
+# pwd: beat123
+
+version: "3"
+
+services:
+  elk:
+    build: .
+    image: kroton-docker.repo:5000/elk:latest
+    volumes:
+      - elk-data-volume:/var/lib/elasticsearch
+      - /var/elastik/elk-docker/elasticsearch.yml:/etc/elasticsearch/elasticsearch.yml
+      - /var/elastik/elk-docker/logstash:/etc/logstash/conf.d
+    ports:
+      - "5601:5601"
+      - "9200:9200"
+      - "5044:5044"
+      - "9300:9300"
+    environment:
+      - ES_HEAP_SIZE=10g
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+       mode: replicated
+       replicas: 1
+       labels: [APP=elk]
+
+  elk-slave:
+    image: kroton-docker.repo:5000/elk:latest
+    volumes:
+      - elk-slave-data-volume:/var/lib/elasticsearch
+      - /var/elastik/elk-docker/elasticsearch-slave.yml:/etc/elasticsearch/elasticsearch.yml
+      - /var/elastik/elk-docker/logstash:/etc/logstash/conf.d      
+    environment:
+      - ES_HEAP_SIZE=2g
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+#    environment:
+#      - LOGSTASH_START=0
+#      - KIBANA_START=0
+#      - ELASTICSEARCH_START=1
+    deploy:
+       mode: replicated
+       replicas: 1
+       labels: [APP=elk-slave]
+volumes:
+  elk-slave-data-volume:
+  elk-data-volume:
