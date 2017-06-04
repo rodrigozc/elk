@@ -22,7 +22,7 @@ RUN set -x \
  && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
  && chmod +x /usr/local/bin/gosu \
  && gosu nobody true \
- && echo 262144 > /proc/sys/vm/max_map_count \
+ && sysctl -q -w vm.max_map_count=262144 \
  && apt-get update -qq \
  && apt-get install -qqy openjdk-8-jdk \
  && apt-get clean \
